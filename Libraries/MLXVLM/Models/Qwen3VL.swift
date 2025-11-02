@@ -1209,7 +1209,7 @@ public enum Qwen3VLLanguage {
 
         let config: Qwen3VLConfiguration
         let textConfig: Qwen3VLConfiguration.TextConfiguration
-        var kvHeads: [Int]
+        public var kvHeads: [Int]
 
         private var ropeDeltas: MLXArray? = nil
 
