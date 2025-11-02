@@ -896,7 +896,7 @@ enum Qwen3VLVision {
 
 // MARK: - Language
 
-enum Qwen3VLLanguage {
+public enum Qwen3VLLanguage {
 
     final class RotaryEmbedding {
 
