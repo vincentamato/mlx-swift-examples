@@ -1202,7 +1202,7 @@ public enum Qwen3VLLanguage {
         }
     }
 
-    final class LanguageModel: Module, KVCacheDimensionProvider {
+    public class LanguageModel: Module, KVCacheDimensionProvider {
 
         @ModuleInfo var model: Model
         @ModuleInfo(key: "lm_head") var lmHead: Linear?
