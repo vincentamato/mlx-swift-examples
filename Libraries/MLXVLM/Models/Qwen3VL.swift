@@ -1511,7 +1511,7 @@ extension Qwen3VLLanguage {
 public final class Qwen3VL: Module, VLMModel, KVCacheDimensionProvider {
 
     @ModuleInfo(key: "vision_tower") private var visionModel: Qwen3VLVision.VisionModel
-    @ModuleInfo(key: "language_model") private var languageModel: Qwen3VLLanguage.LanguageModel
+    @ModuleInfo(key: "language_model") internal var languageModel: Qwen3VLLanguage.LanguageModel
 
     public let config: Qwen3VLConfiguration
 
