@@ -9,20 +9,109 @@ import SentencepieceTokenizer
 public class SentencePieceTokenizerWrapper: Tokenizer {
     private let tokenizer: SentencepieceTokenizer
 
+    // Special token IDs (SentencePiece defaults)
+    public let bosToken: String? = "<s>"
+    public let bosTokenId: Int? = 1
+    public let eosToken: String? = "</s>"
+    public let eosTokenId: Int? = 2
+    public let unknownToken: String? = "<unk>"
+    public let unknownTokenId: Int? = 0
+
+    public let hasChatTemplate: Bool = false
+
     public init(modelPath: String) throws {
         self.tokenizer = try SentencepieceTokenizer(modelPath: modelPath)
+    }
+
+    public func tokenize(text: String) -> [String] {
+        // SentencePiece doesn't expose tokenize directly, so we encode then convert back
+        let ids = encode(text: text)
+        return ids.compactMap { convertIdToToken($0) }
     }
 
     public func encode(text: String) -> [Int] {
         return (try? tokenizer.encode(text)) ?? []
     }
 
+    public func encode(text: String, addSpecialTokens: Bool) -> [Int] {
+        // SentencePiece handles special tokens internally
+        return encode(text: text)
+    }
+
+    public func callAsFunction(_ text: String, addSpecialTokens: Bool) -> [Int] {
+        return encode(text: text, addSpecialTokens: addSpecialTokens)
+    }
+
     public func decode(tokens: [Int]) -> String {
         return (try? tokenizer.decode(tokens)) ?? ""
     }
 
-    public func callAsFunction(_ text: String) -> [Int] {
-        return encode(text: text)
+    public func decode(tokens: [Int], skipSpecialTokens: Bool) -> String {
+        // SentencePiece handles this internally
+        return decode(tokens: tokens)
+    }
+
+    public func convertTokenToId(_ token: String) -> Int? {
+        // Encode the token and return the first ID
+        let ids = (try? tokenizer.encode(token)) ?? []
+        return ids.first
+    }
+
+    public func convertTokensToIds(_ tokens: [String]) -> [Int?] {
+        return tokens.map { convertTokenToId($0) }
+    }
+
+    public func convertIdToToken(_ id: Int) -> String? {
+        // Decode a single token ID
+        return (try? tokenizer.decode([id]))
+    }
+
+    public func convertIdsToTokens(_ ids: [Int]) -> [String?] {
+        return ids.map { convertIdToToken($0) }
+    }
+
+    // Chat template methods - not supported for SentencePiece
+    public func applyChatTemplate(messages: [Message]) throws -> [Int] {
+        throw TokenizerError.chatTemplate("Chat templates not supported for SentencePiece tokenizer")
+    }
+
+    public func applyChatTemplate(messages: [Message], tools: [ToolSpec]?) throws -> [Int] {
+        throw TokenizerError.chatTemplate("Chat templates not supported for SentencePiece tokenizer")
+    }
+
+    public func applyChatTemplate(messages: [Message], tools: [ToolSpec]?, additionalContext: [String: Any]?) throws -> [Int] {
+        throw TokenizerError.chatTemplate("Chat templates not supported for SentencePiece tokenizer")
+    }
+
+    public func applyChatTemplate(messages: [Message], chatTemplate: ChatTemplateArgument) throws -> [Int] {
+        throw TokenizerError.chatTemplate("Chat templates not supported for SentencePiece tokenizer")
+    }
+
+    public func applyChatTemplate(messages: [Message], chatTemplate: String) throws -> [Int] {
+        throw TokenizerError.chatTemplate("Chat templates not supported for SentencePiece tokenizer")
+    }
+
+    public func applyChatTemplate(
+        messages: [Message],
+        chatTemplate: ChatTemplateArgument?,
+        addGenerationPrompt: Bool,
+        truncation: Bool,
+        maxLength: Int?,
+        tools: [ToolSpec]?
+    ) throws -> [Int] {
+        throw TokenizerError.chatTemplate("Chat templates not supported for SentencePiece tokenizer")
+    }
+
+    public func applyChatTemplate(
+        messages: [Message],
+        chatTemplate: ChatTemplateArgument?,
+        addGenerationPrompt: Bool,
+        truncation: Bool,
+        maxLength: Int?,
+        tools: [ToolSpec]?,
+        additionalContext: [String: Any]?
+    ) throws -> [Int] {
+        throw TokenizerError.chatTemplate("Chat templates not supported for SentencePiece tokenizer")
     }
 }
 
