@@ -30,7 +30,13 @@ public class SentencePieceTokenizerWrapper: Tokenizer {
     }
 
     public func encode(text: String) -> [Int] {
-        return (try? tokenizer.encode(text)) ?? []
+        guard var tokens = try? tokenizer.encode(text) else { return [] }
+
+        // CRITICAL FIX: SentencepieceTokenizer adds +1 offset to all token IDs
+        // Subtract 1 to match PyTorch/HuggingFace tokenizer behavior
+        tokens = tokens.map { $0 - 1 }
+
+        return tokens
     }
 
     public func encode(text: String, addSpecialTokens: Bool) -> [Int] {
@@ -43,7 +49,10 @@ public class SentencePieceTokenizerWrapper: Tokenizer {
     }
 
     public func decode(tokens: [Int]) -> String {
-        return (try? tokenizer.decode(tokens)) ?? ""
+        // CRITICAL FIX: Add back the +1 offset before decoding
+        // since SentencepieceTokenizer expects the offset
+        let adjustedTokens = tokens.map { $0 + 1 }
+        return (try? tokenizer.decode(adjustedTokens)) ?? ""
     }
 
     public func decode(tokens: [Int], skipSpecialTokens: Bool) -> String {
@@ -52,8 +61,11 @@ public class SentencePieceTokenizerWrapper: Tokenizer {
     }
 
     public func convertTokenToId(_ token: String) -> Int? {
-        // Encode the token and return the first ID
-        let ids = (try? tokenizer.encode(token)) ?? []
+        // Encode the token and return the first ID (with offset correction)
+        guard var ids = try? tokenizer.encode(token), !ids.isEmpty else { return nil }
+
+        // Apply the -1 offset correction
+        ids = ids.map { $0 - 1 }
         return ids.first
     }
 
@@ -62,8 +74,9 @@ public class SentencePieceTokenizerWrapper: Tokenizer {
     }
 
     public func convertIdToToken(_ id: Int) -> String? {
-        // Decode a single token ID
-        return (try? tokenizer.decode([id]))
+        // Decode a single token ID (add back the +1 offset)
+        let adjustedId = id + 1
+        return (try? tokenizer.decode([adjustedId]))
     }
 
     public func convertIdsToTokens(_ ids: [Int]) -> [String?] {
