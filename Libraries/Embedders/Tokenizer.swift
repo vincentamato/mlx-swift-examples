@@ -3,14 +3,32 @@
 import Foundation
 import Hub
 import Tokenizers
+import SentencepieceTokenizer
 
 public func loadTokenizer(configuration: ModelConfiguration, hub: HubApi) async throws -> Tokenizer
 {
-    let (tokenizerConfig, tokenizerData) = try await loadTokenizerConfig(
-        configuration: configuration, hub: hub)
+    // Get the model directory
+    let modelDirectory: URL
+    switch configuration.id {
+    case .id(_):
+        modelDirectory = configuration.modelDirectory(hub: hub)
+    case .directory(let directory):
+        modelDirectory = directory
+    }
 
-    return try PreTrainedTokenizer(
-        tokenizerConfig: tokenizerConfig, tokenizerData: tokenizerData)
+    // Check if tokenizer.model exists (SentencePiece tokenizer)
+    let sentencePieceTokenizerPath = modelDirectory.appendingPathComponent("tokenizer.model")
+    if FileManager.default.fileExists(atPath: sentencePieceTokenizerPath.path) {
+        // Use SentencepieceTokenizer for models like EmbeddingGemma
+        return try SentencepieceTokenizer(modelPath: sentencePieceTokenizerPath.path)
+    } else {
+        // Fall back to PreTrainedTokenizer for other models
+        let (tokenizerConfig, tokenizerData) = try await loadTokenizerConfig(
+            configuration: configuration, hub: hub)
+
+        return try PreTrainedTokenizer(
+            tokenizerConfig: tokenizerConfig, tokenizerData: tokenizerData)
+    }
 }
 
 func loadTokenizerConfig(configuration: ModelConfiguration, hub: HubApi) async throws -> (

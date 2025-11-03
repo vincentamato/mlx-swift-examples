@@ -6,6 +6,7 @@ import MLX
 import MLXNN
 import MLXLMCommon
 import Tokenizers
+import SentencepieceTokenizer
 
 /// Container for models that guarantees single threaded access.
 ///
@@ -49,10 +50,18 @@ public actor ModelContainer {
     ) async throws {
         self.model = try loadSynchronous(modelDirectory: modelDirectory)
 
-        let (tokenizerConfig, tokenizerData) = try await loadTokenizerConfig(
-            configuration: configuration, hub: hub)
-        self.tokenizer = try PreTrainedTokenizer(
-            tokenizerConfig: tokenizerConfig, tokenizerData: tokenizerData)
+        // Check if tokenizer.model exists (SentencePiece tokenizer)
+        let sentencePieceTokenizerPath = modelDirectory.appendingPathComponent("tokenizer.model")
+        if FileManager.default.fileExists(atPath: sentencePieceTokenizerPath.path) {
+            // Use SentencepieceTokenizer for models like EmbeddingGemma
+            self.tokenizer = try SentencepieceTokenizer(modelPath: sentencePieceTokenizerPath.path)
+        } else {
+            // Fall back to PreTrainedTokenizer for other models
+            let (tokenizerConfig, tokenizerData) = try await loadTokenizerConfig(
+                configuration: configuration, hub: hub)
+            self.tokenizer = try PreTrainedTokenizer(
+                tokenizerConfig: tokenizerConfig, tokenizerData: tokenizerData)
+        }
         self.pooler = loadPooling(modelDirectory: modelDirectory)  //?? Pooling(strategy: .none)
     }
 

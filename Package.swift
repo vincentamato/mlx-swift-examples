@@ -116,6 +116,7 @@ let package = Package(
                 .product(name: "MLXFast", package: "mlx-swift"),
                 .product(name: "MLXNN", package: "mlx-swift"),
                 .product(name: "Transformers", package: "swift-transformers"),
+                .product(name: "SentencepieceTokenizer", package: "swift-transformers"),
                 .product(name: "MLXLinalg", package: "mlx-swift"),
                 .target(name: "MLXLMCommon"),
             ],
