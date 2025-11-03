@@ -30,6 +30,7 @@ let package = Package(
         .package(url: "https://github.com/ml-explore/mlx-swift", .upToNextMinor(from: "0.29.1")),
         .package(url: "https://github.com/huggingface/swift-transformers", from: "1.1.1"),
         .package(url: "https://github.com/1024jp/GzipSwift", "6.0.1" ... "6.0.1"),  // Only needed by MLXMNIST
+	.package(url: "https://github.com/jkrukowski/swift-sentencepiece", from: "0.0.6")
     ],
     targets: [
         .target(
@@ -116,7 +117,7 @@ let package = Package(
                 .product(name: "MLXFast", package: "mlx-swift"),
                 .product(name: "MLXNN", package: "mlx-swift"),
                 .product(name: "Transformers", package: "swift-transformers"),
-                .product(name: "SentencepieceTokenizer", package: "swift-transformers"),
+		.product(name: "SentencepieceTokenizer", package: "swift-sentencepiece")
                 .product(name: "MLXLinalg", package: "mlx-swift"),
                 .target(name: "MLXLMCommon"),
             ],
