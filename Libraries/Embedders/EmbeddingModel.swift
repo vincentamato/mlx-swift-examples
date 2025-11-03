@@ -53,8 +53,8 @@ public actor ModelContainer {
         // Check if tokenizer.model exists (SentencePiece tokenizer)
         let sentencePieceTokenizerPath = modelDirectory.appendingPathComponent("tokenizer.model")
         if FileManager.default.fileExists(atPath: sentencePieceTokenizerPath.path) {
-            // Use SentencepieceTokenizer for models like EmbeddingGemma
-            self.tokenizer = try SentencepieceTokenizer(modelPath: sentencePieceTokenizerPath.path)
+            // Use SentencepieceTokenizer wrapper for models like EmbeddingGemma
+            self.tokenizer = try SentencePieceTokenizerWrapper(modelPath: sentencePieceTokenizerPath.path)
         } else {
             // Fall back to PreTrainedTokenizer for other models
             let (tokenizerConfig, tokenizerData) = try await loadTokenizerConfig(

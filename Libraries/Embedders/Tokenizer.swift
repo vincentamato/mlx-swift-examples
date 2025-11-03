@@ -5,6 +5,27 @@ import Hub
 import Tokenizers
 import SentencepieceTokenizer
 
+/// Wrapper that adapts SentencepieceTokenizer to the Tokenizer protocol
+public class SentencePieceTokenizerWrapper: Tokenizer {
+    private let tokenizer: SentencepieceTokenizer
+
+    public init(modelPath: String) throws {
+        self.tokenizer = try SentencepieceTokenizer(modelPath: modelPath)
+    }
+
+    public func encode(text: String) -> [Int] {
+        return (try? tokenizer.encode(text)) ?? []
+    }
+
+    public func decode(tokens: [Int]) -> String {
+        return (try? tokenizer.decode(tokens)) ?? ""
+    }
+
+    public func callAsFunction(_ text: String) -> [Int] {
+        return encode(text: text)
+    }
+}
+
 public func loadTokenizer(configuration: ModelConfiguration, hub: HubApi) async throws -> Tokenizer
 {
     // Get the model directory
@@ -19,8 +40,8 @@ public func loadTokenizer(configuration: ModelConfiguration, hub: HubApi) async 
     // Check if tokenizer.model exists (SentencePiece tokenizer)
     let sentencePieceTokenizerPath = modelDirectory.appendingPathComponent("tokenizer.model")
     if FileManager.default.fileExists(atPath: sentencePieceTokenizerPath.path) {
-        // Use SentencepieceTokenizer for models like EmbeddingGemma
-        return try SentencepieceTokenizer(modelPath: sentencePieceTokenizerPath.path)
+        // Use SentencepieceTokenizer wrapper for models like EmbeddingGemma
+        return try SentencePieceTokenizerWrapper(modelPath: sentencePieceTokenizerPath.path)
     } else {
         // Fall back to PreTrainedTokenizer for other models
         let (tokenizerConfig, tokenizerData) = try await loadTokenizerConfig(
